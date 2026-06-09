@@ -74,8 +74,8 @@ export default function Dashboard() {
         .from("tasks")
         .select(`
           *,
-          profiles_assigned_to:assigned_to(id, email, full_name),
-          profiles_created_by:created_by(id, email, full_name)
+          profiles_assigned_to:profiles!assigned_to(id, email, full_name),
+          profiles_created_by:profiles!created_by(id, email, full_name)
         `)
         .order("created_at", { ascending: false });
 

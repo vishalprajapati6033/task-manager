@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     title TEXT NOT NULL,
     description TEXT,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'completed')),
-    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    assigned_to UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
