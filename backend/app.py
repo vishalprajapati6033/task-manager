@@ -71,7 +71,9 @@ def create_task():
         # For demonstration, we'll send a placeholder email.
         assigned_email = data.get("assigned_email")
         if assigned_email:
-            email_service.send_task_created_email(assigned_email, new_task["title"])
+            print(f"SMTP: Attempting to send task creation email to {assigned_email}...")
+            sent = email_service.send_task_created_email(assigned_email, new_task["title"])
+            print(f"SMTP: Email dispatch status: {sent}")
         
         return jsonify({"data": response.data}), 201
     except Exception as e:
@@ -97,7 +99,9 @@ def update_task(task_id):
             creator_email = data.get("creator_email")
             task_title = data.get("title", f"Task #{task_id}")
             if creator_email:
-                email_service.send_task_completed_email(creator_email, task_title)
+                print(f"SMTP: Attempting to send task completion email to {creator_email}...")
+                sent = email_service.send_task_completed_email(creator_email, task_title)
+                print(f"SMTP: Email dispatch status: {sent}")
         
         return jsonify({"data": response.data}), 200
     except Exception as e:
