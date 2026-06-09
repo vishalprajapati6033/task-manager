@@ -48,13 +48,20 @@ def create_task():
         return jsonify({"error": "Supabase not configured"}), 500
     try:
         data = request.json
-        # Expecting title, description, assigned_to
-        # You'd also usually pass created_by derived from JWT
+        assigned_email = data.get("assigned_email")
+        assigned_to_id = None
+        
+        if assigned_email:
+            profile_res = supabase.table("profiles").select("id").eq("email", assigned_email).execute()
+            if profile_res.data:
+                assigned_to_id = profile_res.data[0]["id"]
+                
         new_task = {
             "title": data.get("title"),
             "description": data.get("description", ""),
             "status": "pending",
-            "assigned_to": data.get("assigned_to"),
+            "assigned_to": assigned_to_id,
+            "assigned_email": assigned_email,
             "created_by": data.get("created_by")
         }
         response = supabase.table("tasks").insert(new_task).execute()
