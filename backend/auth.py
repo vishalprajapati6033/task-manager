@@ -3,28 +3,28 @@ from flask import request, jsonify
 import httpx
 import os
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_KEY")
+        
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return jsonify({"error": "Missing or invalid authorization token"}), 401
             
         token = auth_header.split(" ")[1]
         
-        if not SUPABASE_URL or not SUPABASE_KEY:
+        if not supabase_url or not supabase_key:
             return jsonify({"error": "Backend auth not configured"}), 500
             
         try:
             headers = {
-                "apikey": SUPABASE_KEY,
+                "apikey": supabase_key,
                 "Authorization": f"Bearer {token}"
             }
             # Verify the token by calling Supabase auth endpoint
-            url = f"{SUPABASE_URL}/auth/v1/user"
+            url = f"{supabase_url}/auth/v1/user"
             
             with httpx.Client() as client:
                 response = client.get(url, headers=headers)
