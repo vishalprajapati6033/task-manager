@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
 from supabase import create_client
 from dotenv import load_dotenv
 import email_service

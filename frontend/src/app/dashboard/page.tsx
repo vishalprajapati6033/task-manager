@@ -21,6 +21,7 @@ interface Task {
   status: "pending" | "completed";
   created_by: string;
   assigned_to: string;
+  assigned_email: string;
   created_at: string;
   profiles_assigned_to?: Profile;
   profiles_created_by?: Profile;
@@ -41,7 +42,7 @@ export default function Dashboard() {
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
+  const [assignedToEmail, setAssignedToEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -95,16 +96,14 @@ export default function Dashboard() {
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !assignedTo) return;
+    if (!title.trim() || !assignedToEmail.trim()) return;
 
     setSubmitting(true);
     try {
-      const selectedProfile = profiles.find(p => p.id === assignedTo);
       const payload = {
         title,
         description,
-        assigned_to: assignedTo,
-        assigned_email: selectedProfile?.email,
+        assigned_email: assignedToEmail.trim(),
         created_by: user.id
       };
 
@@ -129,7 +128,7 @@ export default function Dashboard() {
       // Reset form and refresh data
       setTitle("");
       setDescription("");
-      setAssignedTo("");
+      setAssignedToEmail("");
       await fetchData(user.id);
     } catch (err: any) {
       alert("Error creating task: " + err.message);
@@ -172,8 +171,12 @@ export default function Dashboard() {
   };
 
   const filteredTasks = tasks.filter(task => {
-    if (activeTab === "assigned_to_me") return task.assigned_to === user?.id;
-    if (activeTab === "created_by_me") return task.created_by === user?.id;
+    if (activeTab === "assigned_to_me") {
+      return task.assigned_to === user?.id || task.assigned_email?.toLowerCase() === user?.email?.toLowerCase();
+    }
+    if (activeTab === "created_by_me") {
+      return task.created_by === user?.id;
+    }
     return true;
   });
 
@@ -251,21 +254,24 @@ export default function Dashboard() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Assign To
+                  Assign To (Email)
                 </label>
-                <select
+                <input
+                  type="email"
                   required
-                  value={assignedTo}
-                  onChange={(e) => setAssignedTo(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all"
-                >
-                  <option value="" disabled>Select team member</option>
+                  placeholder="Enter email address (e.g. colleague@gmail.com)"
+                  value={assignedToEmail}
+                  onChange={(e) => setAssignedToEmail(e.target.value)}
+                  list="team-emails"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
+                />
+                <datalist id="team-emails">
                   {profiles.map((profile) => (
-                    <option key={profile.id} value={profile.id}>
-                      {profile.email} {profile.id === user?.id ? "(Me)" : ""}
+                    <option key={profile.id} value={profile.email}>
+                      {profile.full_name || profile.email} {profile.id === user?.id ? "(Me)" : ""}
                     </option>
                   ))}
-                </select>
+                </datalist>
               </div>
 
               <button
@@ -376,7 +382,7 @@ export default function Dashboard() {
                       </span>
                       <span className="flex items-center gap-1.5">
                         <UserCheck className="w-3.5 h-3.5" />
-                        Assignee: {task.profiles_assigned_to?.email || "Unknown"}
+                        Assignee: {task.profiles_assigned_to?.email || task.assigned_email || "Unknown"}
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Mail className="w-3.5 h-3.5" />

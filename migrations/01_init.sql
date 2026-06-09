@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'completed')),
     created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     assigned_to UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    assigned_email TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -60,7 +61,7 @@ ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 -- Tasks Policies
 CREATE POLICY "Users can read tasks they created or are assigned to"
     ON public.tasks FOR SELECT
-    USING (auth.uid() = created_by OR auth.uid() = assigned_to);
+    USING (auth.uid() = created_by OR auth.uid() = assigned_to OR (auth.jwt() ->> 'email') = assigned_email);
 
 CREATE POLICY "Users can insert tasks if they are authenticated"
     ON public.tasks FOR INSERT
@@ -68,7 +69,7 @@ CREATE POLICY "Users can insert tasks if they are authenticated"
 
 CREATE POLICY "Users can update tasks they created or are assigned to"
     ON public.tasks FOR UPDATE
-    USING (auth.uid() = created_by OR auth.uid() = assigned_to);
+    USING (auth.uid() = created_by OR auth.uid() = assigned_to OR (auth.jwt() ->> 'email') = assigned_email);
 
 CREATE POLICY "Users can delete tasks they created"
     ON public.tasks FOR DELETE
