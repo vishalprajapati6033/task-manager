@@ -121,7 +121,10 @@ export default function Dashboard() {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("Failed to create task via API");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to create task via API");
+      }
 
       // Reset form and refresh data
       setTitle("");
@@ -157,7 +160,10 @@ export default function Dashboard() {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("Failed to update task status");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update task status");
+      }
 
       await fetchData(user.id);
     } catch (err: any) {
