@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+# pyrefly: ignore [missing-import]
 from supabase import create_client
 from dotenv import load_dotenv
 import email_service
